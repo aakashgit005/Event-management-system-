@@ -1,14 +1,50 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import EventCard from '../components/EventCard';
 import { Plus, X, Calendar, MapPin, Users, Settings, Tag, Image, Clock, FileText, AlertCircle, Sparkles } from 'lucide-react';
 
 const CATEGORIES = ['Workshop', 'Hackathon', 'Symposium', 'Seminar', 'Conference', 'Other'];
 
+const parseTimeRange = (timeStr) => {
+  if (!timeStr) return { startTime: '', endTime: '' };
+  const convertTo24h = (t) => {
+    if (!t) return '';
+    const match = t.trim().match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) {
+      const match24 = t.trim().match(/(\d+):(\d+)/);
+      if (match24) return `${match24[1].padStart(2, '0')}:${match24[2]}`;
+      return '';
+    }
+    let [ , h, m, ampm ] = match;
+    h = parseInt(h, 10);
+    if (ampm.toUpperCase() === 'PM' && h < 12) h += 12;
+    if (ampm.toUpperCase() === 'AM' && h === 12) h = 0;
+    return `${h.toString().padStart(2, '0')}:${m}`;
+  };
+  const parts = timeStr.split('-');
+  if (parts.length >= 2) {
+    return { startTime: convertTo24h(parts[0]), endTime: convertTo24h(parts[1]) };
+  }
+  return { startTime: convertTo24h(timeStr), endTime: '' };
+};
+
+const formatTime12h = (time24) => {
+  if (!time24) return '';
+  const [h, m] = time24.split(':');
+  if (!h || !m) return time24;
+  const hours = parseInt(h, 10);
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const hours12 = hours % 12 || 12;
+  return `${hours12}:${m} ${ampm}`;
+};
+
 const AdminDashboard = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const location = useLocation();
+  const navigate = useNavigate();
   
   // Modal states
   const [showModal, setShowModal] = useState(false);
@@ -19,12 +55,17 @@ const AdminDashboard = () => {
     title: '',
     description: '',
     date: '',
-    time: '',
+    startTime: '10:00',
+    startAmPm: 'AM',
+    endTime: '04:00',
+    endAmPm: 'PM',
     venue: '',
     seats: '',
     image: '',
     category: 'Workshop'
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   const token = localStorage.getItem('token');
 
@@ -45,35 +86,62 @@ const AdminDashboard = () => {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('action') === 'create') {
+      handleOpenCreate();
+      navigate('/admin', { replace: true });
+    }
+  }, [location, navigate]);
+
   const handleOpenCreate = () => {
     setEditingEvent(null);
     setFormData({
       title: '',
       description: '',
       date: '',
-      time: '',
+      startTime: '10:00',
+      startAmPm: 'AM',
+      endTime: '04:00',
+      endAmPm: 'PM',
       venue: '',
       seats: '',
       image: '',
       category: 'Workshop'
     });
+    setImageFile(null);
+    setImagePreview(null);
     setError('');
     setShowModal(true);
   };
 
   const handleOpenEdit = (event) => {
     setEditingEvent(event);
+    const pStart = parseTimeRange(event.time).startTime;
+    const pEnd = parseTimeRange(event.time).endTime;
+    const start12 = pStart ? formatTime12h(pStart).split(' ') : ['', 'AM'];
+    const end12 = pEnd ? formatTime12h(pEnd).split(' ') : ['', 'PM'];
+
     setFormData({
       title: event.title,
       description: event.description,
       // Format Date to YYYY-MM-DD for input field
       date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
-      time: event.time,
+      startTime: start12[0] || '',
+      startAmPm: start12[1] || 'AM',
+      endTime: end12[0] || '',
+      endAmPm: end12[1] || 'PM',
       venue: event.venue,
       seats: event.totalSeats,
       image: event.image,
       category: event.category
     });
+    setImageFile(null);
+    if (event.image) {
+      setImagePreview(event.image.startsWith('/uploads') ? `http://localhost:5000${event.image}` : event.image);
+    } else {
+      setImagePreview(null);
+    }
     setError('');
     setShowModal(true);
   };
@@ -87,19 +155,33 @@ const AdminDashboard = () => {
     setError('');
 
     try {
+      const data = new FormData();
+      data.append('title', formData.title);
+      data.append('description', formData.description);
+      data.append('date', formData.date);
+      const timeString = formData.endTime 
+        ? `${formData.startTime} ${formData.startAmPm} - ${formData.endTime} ${formData.endAmPm}` 
+        : `${formData.startTime} ${formData.startAmPm}`;
+      data.append('time', timeString);
+      data.append('venue', formData.venue);
+      data.append('seats', formData.seats);
+      data.append('category', formData.category);
+      if (formData.image) data.append('image', formData.image);
+      if (imageFile) data.append('imageFile', imageFile);
+
       if (editingEvent) {
         // Edit request
         await axios.put(
           `http://localhost:5000/api/events/${editingEvent._id}`,
-          { ...formData, seats: parseInt(formData.seats) },
-          { headers: { Authorization: `Bearer ${token}` } }
+          data,
+          { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
         );
       } else {
         // Create request
         await axios.post(
           'http://localhost:5000/api/events',
-          { ...formData, seats: parseInt(formData.seats) },
-          { headers: { Authorization: `Bearer ${token}` } }
+          data,
+          { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
         );
       }
       
@@ -220,7 +302,7 @@ const AdminDashboard = () => {
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Event Title</label>
                 <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                   <input
                     type="text"
                     name="title"
@@ -253,14 +335,17 @@ const AdminDashboard = () => {
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Event Date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none z-10" />
                     <input
                       type="date"
                       name="date"
                       required
                       value={formData.date}
                       onChange={handleFormChange}
-                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm glass-input text-slate-800 dark:text-white"
+                      onClick={(e) => {
+                        if (e.target.showPicker) e.target.showPicker();
+                      }}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm glass-input text-slate-800 dark:text-white cursor-pointer"
                     />
                   </div>
                 </div>
@@ -268,17 +353,54 @@ const AdminDashboard = () => {
                 {/* Time */}
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Timing</label>
-                  <div className="relative">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                      type="text"
-                      name="time"
-                      required
-                      value={formData.time}
-                      onChange={handleFormChange}
-                      placeholder="e.g. 10:00 AM - 4:00 PM"
-                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm glass-input text-slate-800 dark:text-white"
-                    />
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1 flex items-center border rounded-xl text-sm glass-input text-slate-800 dark:text-white overflow-hidden focus-within:ring-2 focus-within:ring-violet-500/50">
+                      <Clock className="absolute left-2.5 w-4 h-4 text-slate-400 z-10" />
+                      <input
+                        type="text"
+                        name="startTime"
+                        required
+                        placeholder="HH:MM"
+                        pattern="\d{1,2}:\d{2}"
+                        title="Enter time as HH:MM (e.g. 10:30)"
+                        value={formData.startTime}
+                        onChange={handleFormChange}
+                        className="w-full min-w-0 pl-8 pr-1 py-2.5 bg-transparent border-none outline-none focus:ring-0 text-sm"
+                      />
+                      <select
+                        name="startAmPm"
+                        value={formData.startAmPm}
+                        onChange={handleFormChange}
+                        className="bg-transparent border-none outline-none text-sm py-2.5 pr-1 pl-0 focus:ring-0 font-medium cursor-pointer text-slate-700 dark:text-slate-300"
+                      >
+                        <option value="AM" className="bg-white dark:bg-slate-800">AM</option>
+                        <option value="PM" className="bg-white dark:bg-slate-800">PM</option>
+                      </select>
+                    </div>
+                    <span className="text-slate-400 font-medium text-xs">to</span>
+                    <div className="relative flex-1 flex items-center border rounded-xl text-sm glass-input text-slate-800 dark:text-white overflow-hidden focus-within:ring-2 focus-within:ring-violet-500/50">
+                      <Clock className="absolute left-2.5 w-4 h-4 text-slate-400 z-10" />
+                      <input
+                        type="text"
+                        name="endTime"
+                        required
+                        placeholder="HH:MM"
+                        pattern="\d{1,2}:\d{2}"
+                        title="Enter time as HH:MM (e.g. 02:00)"
+                        value={formData.endTime}
+                        onChange={handleFormChange}
+                        className="w-full min-w-0 pl-8 pr-1 py-2.5 bg-transparent border-none outline-none focus:ring-0 text-sm"
+                      />
+                      <select
+                        name="endAmPm"
+                        value={formData.endAmPm}
+                        onChange={handleFormChange}
+                        className="bg-transparent border-none outline-none text-sm py-2.5 pr-1 pl-0 focus:ring-0 font-medium cursor-pointer text-slate-700 dark:text-slate-300"
+                      >
+                        <option value="AM" className="bg-white dark:bg-slate-800">AM</option>
+                        <option value="PM" className="bg-white dark:bg-slate-800">PM</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -286,7 +408,7 @@ const AdminDashboard = () => {
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Venue Location</label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                     <input
                       type="text"
                       name="venue"
@@ -303,7 +425,7 @@ const AdminDashboard = () => {
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Seats</label>
                   <div className="relative">
-                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                     <input
                       type="number"
                       name="seats"
@@ -323,7 +445,7 @@ const AdminDashboard = () => {
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Event Category</label>
                   <div className="relative">
-                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                     <select
                       name="category"
                       value={formData.category}
@@ -339,20 +461,37 @@ const AdminDashboard = () => {
 
                 {/* Banner Image */}
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Banner Image URL (Optional)</label>
+                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Banner Image (Optional)</label>
                   <div className="relative">
-                    <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 z-10" />
                     <input
-                      type="url"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleFormChange}
-                      placeholder="Unsplash / external image link"
-                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm glass-input text-slate-800 dark:text-white"
+                      type="file"
+                      accept="image/*"
+                      name="imageFile"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        setImageFile(file);
+                        if (file) {
+                          setImagePreview(URL.createObjectURL(file));
+                        } else {
+                          setImagePreview(null);
+                        }
+                      }}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm glass-input text-slate-800 dark:text-white file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
                     />
                   </div>
                 </div>
               </div>
+
+              {imagePreview && (
+                <div className="mt-4 flex justify-center">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="max-h-64 object-contain rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" 
+                  />
+                </div>
+              )}
 
               {/* Footer Buttons */}
               <div className="pt-4 flex gap-3 border-t border-slate-100 dark:border-slate-850">

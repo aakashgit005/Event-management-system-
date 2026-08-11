@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import EventCard from '../components/EventCard';
-import LightRays from '../components/LightRays';
+import Aurora from '../components/Aurora';
 import { Search, SlidersHorizontal, BookOpen, Laptop, Milestone, GraduationCap, Award, Compass, RefreshCw } from 'lucide-react';
 
 const CATEGORIES = ['All', 'Workshop', 'Hackathon', 'Symposium', 'Seminar', 'Conference'];
@@ -45,21 +45,13 @@ const Home = () => {
     <div className="min-h-screen pb-20 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       {/* Hero Section */}
       <div className="relative py-20 md:py-28 overflow-hidden bg-gradient-to-b from-violet-600/10 via-slate-50 to-slate-50 dark:from-violet-950/20 dark:via-slate-950 dark:to-slate-950">
-        {/* LightRays WebGL background */}
-        <div className="absolute inset-0 opacity-40 dark:opacity-60 pointer-events-none" style={{ zIndex: 0 }}>
-          <LightRays
-            raysOrigin="top-center"
-            raysColor="#7c3aed"
-            raysSpeed={0.8}
-            lightSpread={0.7}
-            rayLength={1.4}
-            followMouse={true}
-            mouseInfluence={0.12}
-            noiseAmount={0.05}
-            distortion={0.03}
-            pulsating={true}
-            fadeDistance={1.2}
-            saturation={1.0}
+        {/* Aurora WebGL background */}
+        <div className="absolute inset-0 opacity-30 dark:opacity-50 pointer-events-none" style={{ zIndex: 0 }}>
+          <Aurora
+            colorStops={["#7cff67","#B497CF","#5227FF"]}
+            blend={0.5}
+            amplitude={1.0}
+            speed={0.5}
           />
         </div>
         {/* Ambient background glow */}

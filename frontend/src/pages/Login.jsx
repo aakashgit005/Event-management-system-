@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Mail, Lock, LogIn, AlertCircle, ArrowRight, UserCheck, ShieldAlert } from 'lucide-react';
+import { Mail, Lock, LogIn, AlertCircle, ArrowRight, UserCheck, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
 
@@ -127,14 +128,25 @@ const Login = () => {
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 required
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 rounded-2xl border text-sm glass-input text-slate-800 dark:text-white"
+                className="w-full pl-10 pr-10 py-3 rounded-2xl border text-sm glass-input text-slate-800 dark:text-white"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 

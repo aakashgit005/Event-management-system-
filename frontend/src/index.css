@@ -16,6 +16,7 @@
 
   body.dark {
     @apply bg-slate-950 text-slate-50;
+    color-scheme: dark;
   }
 
   /* Custom Premium Scrollbar */

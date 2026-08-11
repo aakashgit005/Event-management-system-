@@ -45,7 +45,15 @@ const EventSchema = new mongoose.Schema({
     type: String,
     enum: ['upcoming', 'completed'],
     default: 'upcoming'
-  }
+  },
+  waitlist: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    dateAdded: { type: Date, default: Date.now }
+  }],
+  announcements: [{
+    message: String,
+    dateAdded: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Event', EventSchema);

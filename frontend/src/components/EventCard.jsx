@@ -21,7 +21,11 @@ const CATEGORY_COLORS = {
 };
 
 const EventCard = ({ event, isAdmin, onEdit, onDelete }) => {
-  const imageUrl = event.image || CATEGORY_IMAGES[event.category] || CATEGORY_IMAGES.Other;
+  let rawImage = (event.image && event.image.trim() !== '') ? event.image : null;
+  if (rawImage && rawImage.startsWith('/uploads')) {
+    rawImage = 'http://localhost:5000' + rawImage;
+  }
+  const imageUrl = rawImage || CATEGORY_IMAGES[event.category] || CATEGORY_IMAGES.Other;
   const isSoldOut = event.seatsAvailable <= 0;
   const isCompleted = event.status === 'completed';
   

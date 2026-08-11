@@ -2,6 +2,26 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../models/Event');
 const { adminProtect } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // @route   GET api/events
 // @desc    Get all events (public) with search/filters
@@ -56,8 +76,12 @@ router.get('/:id', async (req, res) => {
 // @route   POST api/events
 // @desc    Create new event (Admin)
 // @access  Private (Admin)
-router.post('/', adminProtect, async (req, res) => {
-  const { title, description, date, time, venue, seats, image, category } = req.body;
+router.post('/', adminProtect, upload.single('imageFile'), async (req, res) => {
+  const { title, description, date, time, venue, seats, category } = req.body;
+  let image = req.body.image;
+  if (req.file) {
+    image = '/uploads/' + req.file.filename;
+  }
 
   try {
     const totalSeats = parseInt(seats) || 0;
@@ -85,8 +109,12 @@ router.post('/', adminProtect, async (req, res) => {
 // @route   PUT api/events/:id
 // @desc    Update an event (Admin)
 // @access  Private (Admin)
-router.put('/:id', adminProtect, async (req, res) => {
-  const { title, description, date, time, venue, seats, image, category, status } = req.body;
+router.put('/:id', adminProtect, upload.single('imageFile'), async (req, res) => {
+  const { title, description, date, time, venue, seats, category, status } = req.body;
+  let image = req.body.image;
+  if (req.file) {
+    image = '/uploads/' + req.file.filename;
+  }
 
   try {
     let event = await Event.findById(req.params.id);

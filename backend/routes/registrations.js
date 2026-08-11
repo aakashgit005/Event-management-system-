@@ -93,6 +93,112 @@ router.post('/', protect, async (req, res) => {
   }
 });
 
+// @route   DELETE api/registrations/:id
+// @desc    Cancel a registration and process waitlist
+// @access  Private (User)
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const registration = await Registration.findById(req.params.id);
+    if (!registration) {
+      return res.status(404).json({ message: 'Registration not found' });
+    }
+
+    if (registration.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to cancel this registration' });
+    }
+
+    const event = await Event.findById(registration.eventId);
+    
+    // Delete the registration
+    await Registration.findByIdAndDelete(req.params.id);
+
+    // If waitlist has users, automatically register the first one
+    if (event.waitlist && event.waitlist.length > 0) {
+      const nextUserObj = event.waitlist.shift(); // Remove first from waitlist
+      const nextUserId = nextUserObj.user;
+      
+      const nextUser = await User.findById(nextUserId);
+
+      // Create new registration
+      const tempRegistrationId = new mongoose.Types.ObjectId();
+      const qrPayload = JSON.stringify({
+        registrationId: tempRegistrationId.toString(),
+        eventId: event._id.toString(),
+        userId: nextUserId.toString()
+      });
+      const qrCodeDataUrl = await QRCode.toDataURL(qrPayload);
+
+      const newRegistration = new Registration({
+        _id: tempRegistrationId,
+        userId: nextUserId,
+        eventId: event._id,
+        qrCode: qrCodeDataUrl,
+        attendanceStatus: 'Absent'
+      });
+      await newRegistration.save();
+
+      // Send email to new registered user
+      try {
+        await sendRegistrationEmail(
+          nextUser.email,
+          nextUser.name,
+          event.title,
+          event.date,
+          event.venue,
+          qrCodeDataUrl,
+          newRegistration._id
+        );
+      } catch (e) {
+        console.error('Waitlist promo email failed', e.message);
+      }
+    } else {
+      // No one on waitlist, just increase available seats
+      event.seatsAvailable += 1;
+    }
+
+    await event.save();
+    res.json({ message: 'Registration cancelled successfully' });
+  } catch (error) {
+    console.error('Error cancelling registration:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   POST api/registrations/waitlist
+// @desc    Join waitlist for an event
+// @access  Private (User)
+router.post('/waitlist', protect, async (req, res) => {
+  const { eventId } = req.body;
+  try {
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+    
+    if (event.seatsAvailable > 0) {
+      return res.status(400).json({ message: 'Seats are available, you can register directly.' });
+    }
+
+    // Check if already registered
+    const existingRegistration = await Registration.findOne({ userId: req.user._id, eventId });
+    if (existingRegistration) {
+      return res.status(400).json({ message: 'You are already registered' });
+    }
+
+    // Check if already on waitlist
+    const alreadyOnWaitlist = event.waitlist.find(w => w.user.toString() === req.user._id.toString());
+    if (alreadyOnWaitlist) {
+      return res.status(400).json({ message: 'You are already on the waitlist' });
+    }
+
+    event.waitlist.push({ user: req.user._id });
+    await event.save();
+
+    res.json({ message: 'Successfully joined waitlist' });
+  } catch (error) {
+    console.error('Error joining waitlist:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @route   GET api/registrations/my-registrations
 // @desc    Get logged-in participant's registration history
 // @access  Private (User)
