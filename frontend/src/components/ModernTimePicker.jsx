@@ -179,21 +179,21 @@ const ModernTimePicker = ({ formData, handleFormChange, setFormData }) => {
       <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Timing</label>
       
       {/* Time Cards Row */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-1 sm:gap-3">
         
         {/* Start Time Card */}
         <div className="relative group">
           <button
             type="button"
             onClick={() => setActivePicker(activePicker === 'start' ? null : 'start')}
-            className={`flex items-center gap-2 px-4 py-3 rounded-2xl border transition-all ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border transition-all ${
               activePicker === 'start' 
                 ? 'bg-violet-600/10 border-violet-500/50 text-violet-400' 
                 : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/50'
             }`}
           >
-            <Clock className={`w-4 h-4 ${activePicker === 'start' ? 'text-violet-500' : 'text-slate-500'}`} />
-            <span className="font-semibold tracking-wide">
+            <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${activePicker === 'start' ? 'text-violet-500' : 'text-slate-500'}`} />
+            <span className="font-semibold tracking-wide text-[10px] sm:text-sm whitespace-nowrap">
               {formData.startTime} <span className="text-xs opacity-75">{formData.startAmPm}</span>
             </span>
             <ChevronDown className="w-3 h-3 opacity-50 ml-1" />
@@ -214,14 +214,14 @@ const ModernTimePicker = ({ formData, handleFormChange, setFormData }) => {
           <button
             type="button"
             onClick={() => setActivePicker(activePicker === 'end' ? null : 'end')}
-            className={`flex items-center gap-2 px-4 py-3 rounded-2xl border transition-all ${
+            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border transition-all ${
               activePicker === 'end' 
                 ? 'bg-violet-600/10 border-violet-500/50 text-violet-400' 
                 : 'bg-slate-900/50 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/50'
             }`}
           >
-            <Clock className={`w-4 h-4 ${activePicker === 'end' ? 'text-violet-500' : 'text-slate-500'}`} />
-            <span className="font-semibold tracking-wide">
+            <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 ${activePicker === 'end' ? 'text-violet-500' : 'text-slate-500'}`} />
+            <span className="font-semibold tracking-wide text-[10px] sm:text-sm whitespace-nowrap">
               {formData.endTime} <span className="text-xs opacity-75">{formData.endAmPm}</span>
             </span>
             <ChevronDown className="w-3 h-3 opacity-50 ml-1" />

@@ -284,7 +284,7 @@ const AdminDashboard = () => {
           <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] flex flex-col animate-slide-up">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-850">
+            <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-850">
               <h3 className="font-bold text-slate-850 dark:text-white text-lg">
                 {editingEvent ? 'Modify Event Details' : 'Launch New Event'}
               </h3>
@@ -297,7 +297,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Scrollable Form Body */}
-            <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
+            <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
               {error && (
                 <div className="flex items-center gap-2 p-3 text-xs text-red-650 bg-red-50 border border-red-200 rounded-xl">
                   <AlertCircle className="w-4.5 h-4.5 flex-shrink-0" />

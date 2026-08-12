@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Calendar, Plus, RefreshCw, MapPin, Users, LogOut, Bell, Search, Globe, ChevronDown, ScanLine } from 'lucide-react';
+import { LayoutDashboard, Calendar, Plus, RefreshCw, MapPin, Users, LogOut, Bell, Search, Globe, ChevronDown, ScanLine, Menu, X } from 'lucide-react';
 import DotGrid from './DotGrid';
 
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -38,10 +39,18 @@ const AdminLayout = ({ children }) => {
   return (
     <div className="flex h-screen bg-[#0f0f13] text-slate-300 font-sans overflow-hidden">
       
+      {/* Mobile Overlay Background */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-[#16161a] border-r border-[#272730] flex flex-col hidden md:flex">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#16161a] border-r border-[#272730] flex flex-col transition-transform duration-300 md:static md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Logo Area */}
-        <div className="h-16 flex items-center px-5 flex-shrink-0">
+        <div className="h-16 flex items-center justify-between px-5 flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-[#6344ff] flex items-center justify-center text-white font-bold text-xs">
               <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor" strokeWidth="2">
@@ -51,6 +60,13 @@ const AdminLayout = ({ children }) => {
             <span className="text-white text-lg font-bold tracking-wide">EventFlow</span>
             <span className="text-[10px] uppercase font-bold text-[#6344ff] bg-[#6344ff]/10 px-1.5 py-0.5 rounded ml-1">Organizer</span>
           </div>
+          {/* Close button for mobile */}
+          <button 
+            className="md:hidden text-slate-400 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Navigation */}
@@ -72,6 +88,7 @@ const AdminLayout = ({ children }) => {
                           ? 'bg-[#6344ff] text-white shadow-lg shadow-[#6344ff]/20' 
                           : 'text-slate-400 hover:text-white hover:bg-[#272730]/50'
                       }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {item.icon}
                       {item.name}
@@ -106,13 +123,26 @@ const AdminLayout = ({ children }) => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         
         {/* Top Header */}
-        <header className="h-16 bg-[#0f0f13] flex items-center justify-between px-8 flex-shrink-0">
+        <header className="h-16 bg-[#0f0f13] flex items-center justify-between px-4 md:px-8 flex-shrink-0">
           
-          {/* Breadcrumbs */}
-          <div className="flex items-center text-sm font-medium text-slate-400">
-            <span>Home</span>
-            <span className="mx-2 text-slate-600">&gt;</span>
-            <span className="text-white">Organizer Panel</span>
+          <div className="flex items-center gap-3">
+            {/* Hamburger Menu for Mobile */}
+            <button 
+              className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            
+            {/* Breadcrumbs */}
+            <div className="hidden sm:flex items-center text-sm font-medium text-slate-400">
+              <span>Home</span>
+              <span className="mx-2 text-slate-600">&gt;</span>
+              <span className="text-white">Organizer Panel</span>
+            </div>
+            
+            {/* Mobile Title (visible only on small screens) */}
+            <span className="sm:hidden text-white font-bold text-sm">Organizer Panel</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -136,7 +166,7 @@ const AdminLayout = ({ children }) => {
               shockStrength={4}
             />
           </div>
-          <div className="relative z-10 p-8 min-h-full">
+          <div className="relative z-10 p-4 md:p-8 min-h-full w-full">
             {children}
           </div>
         </main>

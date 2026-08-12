@@ -55,7 +55,7 @@ const Home = () => {
           />
         </div>
         {/* Ambient background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-[100px]" style={{ zIndex: 1 }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[600px] h-[300px] bg-violet-500/10 dark:bg-violet-500/5 rounded-full blur-[100px]" style={{ zIndex: 1 }} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6 relative" style={{ zIndex: 2 }}>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-400 border border-violet-200/30 dark:border-violet-900/30 rounded-full text-xs font-bold uppercase tracking-wider animate-fade-in">
