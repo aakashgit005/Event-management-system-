@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import EventCard from '../components/EventCard';
+import ModernTimePicker from '../components/ModernTimePicker';
 import { Plus, X, Calendar, MapPin, Users, Settings, Tag, Image, Clock, FileText, AlertCircle, Sparkles } from 'lucide-react';
 
 const CATEGORIES = ['Workshop', 'Hackathon', 'Symposium', 'Seminar', 'Conference', 'Other'];
@@ -62,7 +63,8 @@ const AdminDashboard = () => {
     venue: '',
     seats: '',
     image: '',
-    category: 'Workshop'
+    category: 'Workshop',
+    customCategory: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -107,7 +109,8 @@ const AdminDashboard = () => {
       venue: '',
       seats: '',
       image: '',
-      category: 'Workshop'
+      category: 'Workshop',
+      customCategory: ''
     });
     setImageFile(null);
     setImagePreview(null);
@@ -122,6 +125,8 @@ const AdminDashboard = () => {
     const start12 = pStart ? formatTime12h(pStart).split(' ') : ['', 'AM'];
     const end12 = pEnd ? formatTime12h(pEnd).split(' ') : ['', 'PM'];
 
+    const isCustomCat = event.category && !CATEGORIES.includes(event.category);
+
     setFormData({
       title: event.title,
       description: event.description,
@@ -134,7 +139,8 @@ const AdminDashboard = () => {
       venue: event.venue,
       seats: event.totalSeats,
       image: event.image,
-      category: event.category
+      category: isCustomCat ? 'Other' : (event.category || 'Workshop'),
+      customCategory: isCustomCat ? event.category : ''
     });
     setImageFile(null);
     if (event.image) {
@@ -165,7 +171,8 @@ const AdminDashboard = () => {
       data.append('time', timeString);
       data.append('venue', formData.venue);
       data.append('seats', formData.seats);
-      data.append('category', formData.category);
+      const finalCategory = formData.category === 'Other' ? (formData.customCategory || 'Other') : formData.category;
+      data.append('category', finalCategory);
       if (formData.image) data.append('image', formData.image);
       if (imageFile) data.append('imageFile', imageFile);
 
@@ -274,7 +281,7 @@ const AdminDashboard = () => {
       {/* Create / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] flex flex-col animate-slide-up">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] flex flex-col animate-slide-up">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-850">
@@ -351,58 +358,11 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Time */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Timing</label>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1 flex items-center border rounded-xl text-sm glass-input text-slate-800 dark:text-white overflow-hidden focus-within:ring-2 focus-within:ring-violet-500/50">
-                      <Clock className="absolute left-2.5 w-4 h-4 text-slate-400 z-10" />
-                      <input
-                        type="text"
-                        name="startTime"
-                        required
-                        placeholder="HH:MM"
-                        pattern="\d{1,2}:\d{2}"
-                        title="Enter time as HH:MM (e.g. 10:30)"
-                        value={formData.startTime}
-                        onChange={handleFormChange}
-                        className="w-full min-w-0 pl-8 pr-1 py-2.5 bg-transparent border-none outline-none focus:ring-0 text-sm"
-                      />
-                      <select
-                        name="startAmPm"
-                        value={formData.startAmPm}
-                        onChange={handleFormChange}
-                        className="bg-transparent border-none outline-none text-sm py-2.5 pr-1 pl-0 focus:ring-0 font-medium cursor-pointer text-slate-700 dark:text-slate-300"
-                      >
-                        <option value="AM" className="bg-white dark:bg-slate-800">AM</option>
-                        <option value="PM" className="bg-white dark:bg-slate-800">PM</option>
-                      </select>
-                    </div>
-                    <span className="text-slate-400 font-medium text-xs">to</span>
-                    <div className="relative flex-1 flex items-center border rounded-xl text-sm glass-input text-slate-800 dark:text-white overflow-hidden focus-within:ring-2 focus-within:ring-violet-500/50">
-                      <Clock className="absolute left-2.5 w-4 h-4 text-slate-400 z-10" />
-                      <input
-                        type="text"
-                        name="endTime"
-                        required
-                        placeholder="HH:MM"
-                        pattern="\d{1,2}:\d{2}"
-                        title="Enter time as HH:MM (e.g. 02:00)"
-                        value={formData.endTime}
-                        onChange={handleFormChange}
-                        className="w-full min-w-0 pl-8 pr-1 py-2.5 bg-transparent border-none outline-none focus:ring-0 text-sm"
-                      />
-                      <select
-                        name="endAmPm"
-                        value={formData.endAmPm}
-                        onChange={handleFormChange}
-                        className="bg-transparent border-none outline-none text-sm py-2.5 pr-1 pl-0 focus:ring-0 font-medium cursor-pointer text-slate-700 dark:text-slate-300"
-                      >
-                        <option value="AM" className="bg-white dark:bg-slate-800">AM</option>
-                        <option value="PM" className="bg-white dark:bg-slate-800">PM</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
+                <ModernTimePicker 
+                  formData={formData} 
+                  handleFormChange={handleFormChange}
+                  setFormData={setFormData}
+                />
 
                 {/* Venue */}
                 <div className="space-y-1">
@@ -457,6 +417,19 @@ const AdminDashboard = () => {
                       ))}
                     </select>
                   </div>
+                  {formData.category === 'Other' && (
+                    <div className="mt-2 relative animate-fade-in">
+                       <input 
+                         type="text" 
+                         name="customCategory"
+                         value={formData.customCategory}
+                         onChange={handleFormChange}
+                         placeholder="Type your custom category..."
+                         required
+                         className="w-full px-4 py-2.5 rounded-xl border text-sm glass-input text-slate-800 dark:text-white"
+                       />
+                    </div>
+                  )}
                 </div>
 
                 {/* Banner Image */}
