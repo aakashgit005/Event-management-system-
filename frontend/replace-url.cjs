@@ -6,7 +6,7 @@ const directoryPath = path.join(__dirname, 'src');
 function replaceInFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   if (content.includes('http://192.168.1.14:5000')) {
-    const updatedContent = content.replace(/http:\/\/192.168.1.14:5000/g, 'http://localhost:5000');
+    const updatedContent = content.replace(/http:\/\/192.168.1.14:5000/g, 'https://event-management-system-gx6p.onrender.com');
     fs.writeFileSync(filePath, updatedContent, 'utf8');
     console.log(`Updated ${filePath}`);
   }

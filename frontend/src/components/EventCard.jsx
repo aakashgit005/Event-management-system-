@@ -23,7 +23,7 @@ const CATEGORY_COLORS = {
 const EventCard = ({ event, isAdmin, onEdit, onDelete }) => {
   let rawImage = (event.image && event.image.trim() !== '') ? event.image : null;
   if (rawImage && rawImage.startsWith('/uploads')) {
-    rawImage = 'http://localhost:5000' + rawImage;
+    rawImage = 'https://event-management-system-gx6p.onrender.com' + rawImage;
   }
   const imageUrl = rawImage || CATEGORY_IMAGES[event.category] || CATEGORY_IMAGES.Other;
   const isSoldOut = event.seatsAvailable <= 0;

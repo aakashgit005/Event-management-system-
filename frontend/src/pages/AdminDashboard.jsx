@@ -74,7 +74,7 @@ const AdminDashboard = () => {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/events');
+      const res = await axios.get('https://event-management-system-gx6p.onrender.com/api/events');
       setEvents(res.data);
     } catch (err) {
       console.error(err);
@@ -144,7 +144,7 @@ const AdminDashboard = () => {
     });
     setImageFile(null);
     if (event.image) {
-      setImagePreview(event.image.startsWith('/uploads') ? `http://localhost:5000${event.image}` : event.image);
+      setImagePreview(event.image.startsWith('/uploads') ? `https://event-management-system-gx6p.onrender.com${event.image}` : event.image);
     } else {
       setImagePreview(null);
     }
@@ -179,14 +179,14 @@ const AdminDashboard = () => {
       if (editingEvent) {
         // Edit request
         await axios.put(
-          `http://localhost:5000/api/events/${editingEvent._id}`,
+          'https://event-management-system-gx6p.onrender.com/api/events/${editingEvent._id}',
           data,
           { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
         );
       } else {
         // Create request
         await axios.post(
-          'http://localhost:5000/api/events',
+'https://event-management-system-gx6p.onrender.com/api/events',          
           data,
           { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } }
         );
@@ -204,7 +204,7 @@ const AdminDashboard = () => {
     if (!window.confirm('Are you sure you want to delete this event? This will also remove associated registration files.')) return;
     
     try {
-      await axios.delete(`http://localhost:5000/api/events/${eventId}`, {
+      await axios.delete(`https://event-management-system-gx6p.onrender.com/api/events/${eventId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchEvents();

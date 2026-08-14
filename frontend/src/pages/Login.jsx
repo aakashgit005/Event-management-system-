@@ -23,8 +23,8 @@ const Login = () => {
     setError('');
 
     const loginUrl = isAdmin 
-      ? 'http://localhost:5000/api/auth/admin/login' 
-      : 'http://localhost:5000/api/auth/login';
+      ? 'https://event-management-system-gx6p.onrender.com/api/auth/admin/login' 
+      : 'https://event-management-system-gx6p.onrender.com/api/auth/login';
 
     try {
       const response = await axios.post(loginUrl, formData);

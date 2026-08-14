@@ -22,7 +22,7 @@ const QRScanner = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/events');
+        const res = await axios.get('https://event-management-system-gx6p.onrender.com/api/events');
         // Show all events
         setEvents(res.data);
         if (res.data.length > 0) {
@@ -112,7 +112,7 @@ const QRScanner = () => {
   const submitAttendance = async (registrationId) => {
     try {
       const res = await axios.post(
-        'http://localhost:5000/api/registrations/verify-qr',
+        'https://event-management-system-gx6p.onrender.com/api/registrations/verify-qr',
         { registrationId, eventId: selectedEventId },
         { headers: { Authorization: `Bearer ${token}` } }
       );

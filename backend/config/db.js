@@ -5,7 +5,7 @@ let mongoServer;
 
 const connectDB = async () => {
   try {
-    const dbUri = process.env.MONGO_URI || 'mongodb://localhost:27017/eventflow';
+    const dbUri = process.env.MONGO_URI;
     console.log(`Attempting to connect to MongoDB at: ${dbUri}...`);
     
     // Try connecting with a 2-second timeout

@@ -104,8 +104,8 @@ const Signup = () => {
     try {
       const { name, email, phone, password, college, department, year } = formData;
       const signupUrl = isAdmin
-        ? 'http://localhost:5000/api/auth/admin/signup'
-        : 'http://localhost:5000/api/auth/signup';
+        ? 'https://event-management-system-gx6p.onrender.com/api/auth/admin/signup'
+        : 'https://event-management-system-gx6p.onrender.com/api/auth/signup';
       const payload = isAdmin
         ? { email, password }
         : { name, email, phone, password, college, department, year };

@@ -16,7 +16,7 @@ const Analytics = () => {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5000/api/analytics/summary', {
+        const res = await axios.get('https://event-management-system-gx6p.onrender.com/api/analytics/summary', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setData(res.data);

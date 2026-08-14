@@ -16,7 +16,7 @@ const ParticipantDashboard = () => {
   const fetchRegistrations = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5000/api/registrations/my-registrations', {
+      const res = await axios.get('https://event-management-system-gx6p.onrender.com/api/registrations/my-registrations', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRegistrations(res.data);
@@ -36,7 +36,7 @@ const ParticipantDashboard = () => {
   const handleDownloadCertificate = async (regId, eventTitle) => {
     try {
       // Trigger streaming download by opening the route in a new tab/window or direct fetch
-      window.open(`http://localhost:5000/api/registrations/certificate/${regId}`, '_blank');
+      window.open(`https://event-management-system-gx6p.onrender.com/api/registrations/certificate/${regId}`, '_blank');
     } catch (error) {
       console.error('Failed to download certificate:', error);
       alert('Could not download certificate. Make sure you were marked as Present.');

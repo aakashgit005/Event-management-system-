@@ -60,12 +60,12 @@ const EventDetails = () => {
     try {
       setLoading(true);
       // Fetch Event details
-      const eventRes = await axios.get(`http://localhost:5000/api/events/${id}`);
+      const eventRes = await axios.get(`https://event-management-system-gx6p.onrender.com/api/events/${id}`);
       setEvent(eventRes.data);
 
       // Check if participant is logged in and already registered for this event
       if (token && user && user.role === 'user') {
-        const regRes = await axios.get('http://localhost:5000/api/registrations/my-registrations', {
+        const regRes = await axios.get('https://event-management-system-gx6p.onrender.com/api/registrations/my-registrations', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const reg = regRes.data.find(r => r.eventId._id === id || r.eventId === id);
@@ -93,7 +93,7 @@ const EventDetails = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/registrations',
+        'https://event-management-system-gx6p.onrender.com/api/registrations',
         { eventId: id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -144,7 +144,7 @@ const EventDetails = () => {
 
   let rawImage = (event.image && event.image.trim() !== '') ? event.image : null;
   if (rawImage && rawImage.startsWith('/uploads')) {
-    rawImage = 'http://localhost:5000' + rawImage;
+    rawImage = 'https://event-management-system-gx6p.onrender.com' + rawImage;
   }
   const imageUrl = rawImage || CATEGORY_IMAGES[event.category] || CATEGORY_IMAGES.Other;
   const isSoldOut = event.seatsAvailable <= 0;

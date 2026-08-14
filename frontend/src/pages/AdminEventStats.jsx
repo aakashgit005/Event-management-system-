@@ -18,10 +18,10 @@ const AdminEventStats = () => {
   const fetchStatsData = async () => {
     try {
       setLoading(true);
-      const eventRes = await axios.get(`http://localhost:5000/api/events/${id}`);
+      const eventRes = await axios.get(`https://event-management-system-gx6p.onrender.com/api/events/${id}`);
       setEvent(eventRes.data);
 
-      const regRes = await axios.get(`http://localhost:5000/api/registrations/event/${id}`, {
+      const regRes = await axios.get(`https://event-management-system-gx6p.onrender.com/api/registrations/event/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRegistrations(regRes.data);
@@ -53,7 +53,7 @@ const AdminEventStats = () => {
       // Wait, since verify-qr already supports marking Present, we can just call:
       if (nextStatus === 'Present') {
         await axios.post(
-          'http://localhost:5000/api/registrations/verify-qr',
+  'https://event-management-system-gx6p.onrender.com/api/registrations/verify-qr',
           { registrationId: regId, eventId: id },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -70,10 +70,10 @@ const AdminEventStats = () => {
         // To allow toggling attendance back and forth manually, let's just make a PUT route in registrations.js:
         // `router.put('/:registrationId/attendance', adminProtect, ...)`
         // Yes! Adding this route makes the manual attendance override extremely solid and complete.
-        // Let's write a PUT call to: `http://localhost:5000/api/registrations/${regId}/attendance` with body `{ status: nextStatus }`.
+        // Let's write a PUT call to: `https://event-management-system-gx6p.onrender.com/api/registrations/${regId}/attendance` with body `{ status: nextStatus }`.
         // Let's make this call.
         await axios.put(
-          `http://localhost:5000/api/registrations/${regId}/attendance`,
+          `https://event-management-system-gx6p.onrender.com/api/registrations/${regId}/attendance`,
           { status: nextStatus },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -96,7 +96,7 @@ const AdminEventStats = () => {
     setError('');
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/registrations/issue-certificates/${id}`,
+        `https://event-management-system-gx6p.onrender.com/api/registrations/issue-certificates/${id}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
